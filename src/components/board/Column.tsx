@@ -9,9 +9,11 @@ interface ColumnProps {
   count: number
   taskIds: string[]
   children: ReactNode
+  accent: string
+  surface: string
 }
 
-export default function Column({ id, title, count, taskIds, children }: ColumnProps) {
+export default function Column({ id, title, count, taskIds, children, accent, surface }: ColumnProps) {
   const { setNodeRef, isOver } = useDroppable({
     id,
   })
@@ -19,20 +21,28 @@ export default function Column({ id, title, count, taskIds, children }: ColumnPr
   return (
     <section
       ref={setNodeRef}
-      className={`rounded-2xl border bg-white p-4 shadow-sm transition ${
-        isOver ? 'border-indigo-400 ring-2 ring-indigo-100' : 'border-gray-200'
-      }`}
+      className={`overflow-hidden rounded-xl border shadow-sm transition-all ${
+        isOver ? 'border-indigo-300 ring-2 ring-indigo-100' : 'border-gray-200'
+      } ${surface}`}
     >
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-800">{title}</h2>
-        <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-medium text-gray-500">
-          {count}
-        </span>
-      </div>
+      {/* Accent strip */}
+      <div className={`h-1.5 w-full ${accent}`} />
 
-      <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
-        <div className="min-h-[120px] space-y-3">{children}</div>
-      </SortableContext>    
+      {/* Content area */}
+      <div className="px-4 pb-4 pt-5">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-sm font-semibold text-gray-800">{title}</h2>
+          {/* Task Count Badge */}
+          <span className="flex h-7 min-w-7 items-center justify-center rounded-full border border-slate-200 bg-white px-2 text-sm font-semibold text-slate-700 shadow-sm">
+            {count}
+          </span>
+        </div>
+
+        {/* Tasks */}
+        <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+          <div className="min-h-[160px] space-y-3">{children}</div>
+        </SortableContext>    
+      </div>
     </section>
   )
 }
