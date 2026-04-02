@@ -78,7 +78,7 @@ function DueDateBadge({ dueDate }: { dueDate: string | null }) {
   const today = new Date()
   const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
   const due = parseLocalDate(dueDate)
-  const diffTime = due.getTime() - today.getTime()
+  const diffTime = due.getTime() - todayOnly.getTime()  
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
   let textClass = 'text-slate-500'
