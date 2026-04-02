@@ -6,6 +6,7 @@ import { CalendarDays } from 'lucide-react'
 
 interface TaskCardProps {
   task: Task
+  onClick: () => void
 }
 
 // Task priority color (row, normal, high)
@@ -15,7 +16,7 @@ const priorityStyles: Record<TaskPriority, string> = {
   high: 'bg-rose-100 text-rose-600',
 }
 
-export default function TaskCard({ task }: TaskCardProps) {
+export default function TaskCard({ task, onClick }: TaskCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
   useSortable({
     id: task.id,
@@ -39,7 +40,8 @@ export default function TaskCard({ task }: TaskCardProps) {
       style={style}
       {...attributes}
       {...listeners} 
-      className={`rounded-2xl border border-gray-200 bg-white p-4 shadow-sm ${
+      onClick={onClick}
+      className={`cursor-pointer rounded-2xl border border-gray-200 bg-white p-4 shadow-sm ${
         isDragging ? 'opacity-50' : ''
       }`}
     >
