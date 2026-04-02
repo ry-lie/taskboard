@@ -76,7 +76,8 @@ function DueDateBadge({ dueDate }: { dueDate: string | null }) {
   }
 
   const today = new Date()
-  const due = new Date(dueDate)
+  const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  const due = parseLocalDate(dueDate)
   const diffTime = due.getTime() - today.getTime()
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
@@ -88,10 +89,7 @@ function DueDateBadge({ dueDate }: { dueDate: string | null }) {
     textClass = 'text-amber-600'
   }
 
-  const formattedDate = new Date(dueDate).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-  })
+  const formattedDate = formatDateLabel(dueDate)
 
   return (
     <div className={`flex items-center gap-1.5 text-xs font-medium ${textClass}`}>
@@ -99,4 +97,18 @@ function DueDateBadge({ dueDate }: { dueDate: string | null }) {
       <span>{formattedDate}</span>
     </div>
   )
+}
+
+function parseLocalDate(dateString: string) {
+  const [year, month, day] = dateString.split('-').map(Number)
+  return new Date(year, month - 1, day)
+}
+
+function formatDateLabel(dateString: string) {
+  const date = parseLocalDate(dateString)
+
+  return date.toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  })
 }
