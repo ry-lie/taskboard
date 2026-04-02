@@ -3,8 +3,9 @@ import Column from '../components/board/Column'
 import EmptyState from '../components/board/EmptyState'
 import TaskCard from '../components/board/TaskCard'
 import { useTasks } from '../hooks/useTasks'
-import type { TaskStatus } from '../types/taskType'
+import type { Task, TaskStatus } from '../types/taskType'
 import CreateTaskModal from '../components/modal/CreateTaskModal'
+import TaskDetailModal from '../components/modal/TaskDetailModal'
 // drag and drop
 import {
   DndContext,
@@ -52,6 +53,13 @@ export default function Board() {
 
   // Controls whether the create task modal is open.
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
+  const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false)
+  const handleTaskClick = (task: Task) => {
+  setSelectedTask(task)
+  setIsTaskDetailOpen(true)
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -139,6 +147,7 @@ export default function Board() {
 
                 return (
                   <Column
+                    key={column.id}
                     id={column.id}
                     title={column.title}
                     count={columnTasks.length}
@@ -149,7 +158,9 @@ export default function Board() {
                   {columnTasks.length === 0 ? (
                     <EmptyState title="No tasks yet" description={column.emptyText} />
                     ) : (
-                      columnTasks.map((task) => <TaskCard key={task.id} task={task} />)
+                      columnTasks.map((task) => (
+                        <TaskCard key={task.id} task={task} onClick={() => handleTaskClick(task)} />
+                      ))
                     )}
                   </Column>
                 )
@@ -163,6 +174,16 @@ export default function Board() {
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}
         onTaskCreated={refetch}
+      />
+
+      <TaskDetailModal
+        task={selectedTask}
+        isOpen={isTaskDetailOpen}
+        onClose={() => {
+          setIsTaskDetailOpen(false)
+          setSelectedTask(null)
+        }}
+        onTaskUpdated={refetch}
       />
     </>
 
