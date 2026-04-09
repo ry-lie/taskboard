@@ -17,6 +17,7 @@ import {
 import type { DragEndEvent } from '@dnd-kit/core' // *type-only import
 import { supabase } from '../lib/supabase'
 import CalendarView from './CalendarView'
+import Navbar from '../components/common/Navbar'
 
 const columns: { id: TaskStatus; title: string; accent: string; emptyText: string; surface: string; }[] = [
   { 
@@ -59,6 +60,8 @@ export default function Board() {
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  
   const handleTaskClick = (task: Task) => {
   setSelectedTask(task)
   setIsTaskDetailOpen(true)
@@ -71,9 +74,18 @@ export default function Board() {
       },
     })
   )
+  const filteredTasks = tasks.filter((task) => {
+    const query = searchQuery.trim().toLowerCase()
+    if (!query) return true
+
+    const titleMatch = task.title.toLowerCase().includes(query)
+    const descriptionMatch = (task.description ?? '').toLowerCase().includes(query)
+
+    return titleMatch || descriptionMatch
+  })
 
   const getTasksByStatus = (status: TaskStatus) => {
-    return tasks.filter((task) => task.status === status)
+    return filteredTasks.filter((task) => task.status === status)
   }
 
   const findColumnByTaskId = (taskId: string): TaskStatus | null => {
@@ -119,90 +131,79 @@ export default function Board() {
 
   return (
     <>
-      <div className="min-h-screen bg-[#f8fafc] px-6 py-8">
-        <div className="mx-auto max-w-7xl">
-          {/* Header */}
-          <div className="mb-10 flex items-center justify-between">
-            <div>
-              <p className="text-sm font-semibold text-indigo-600">FlowBoard</p>
-              <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">My Tasks</h1>
-              <p className="mt-3 text-lg text-slate-500">
-                Track your work visually and keep things moving.
-              </p>
-            </div>
-            {/* Create Task Button */}
-            <button
-              onClick={() => setIsCreateModalOpen(true)}
-              className="rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
-            >
-              + New Task
-            </button>
-          </div>
+      <div className="min-h-screen bg-[#f8fafc]">
+        <Navbar 
+          viewMode={viewMode} 
+          onChangeView={setViewMode} 
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+        />
 
-          {/* View Toggle */}
-          <div className="mb-6 flex items-center gap-2">
-            <button
-              onClick={() => setViewMode('board')}
-              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
-                viewMode === 'board'
-                  ? 'bg-slate-900 text-white'
-                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              Board
-            </button>
-
-            <button
-              onClick={() => setViewMode('calendar')}
-              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
-                viewMode === 'calendar'
-                  ? 'bg-slate-900 text-white'
-                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              Calendar
-            </button>
-          </div>
-
-          {loading && <p className="mb-4 text-sm text-gray-500">Loading tasks...</p>}
-          {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
-          
-          {viewMode === 'board' ? (
-            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-              
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-                {columns.map((column) => {
-                  const columnTasks = getTasksByStatus(column.id)
-
-                  return (
-                    <Column
-                      key={column.id}
-                      id={column.id}
-                      title={column.title}
-                      count={columnTasks.length}
-                      taskIds={columnTasks.map((task) => task.id)}
-                      accent={column.accent}
-                      surface={column.surface}
-                    >
-                    {columnTasks.length === 0 ? (
-                      <EmptyState title="No tasks yet" description={column.emptyText} />
-                      ) : (
-                        columnTasks.map((task) => (
-                          <TaskCard 
-                            key={task.id} 
-                            task={task} 
-                            onClick={() => handleTaskClick(task)} 
-                          />
-                        ))
-                      )}
-                    </Column>
-                  )
-                })}
+        <div className="px-16 py-10">
+          <div className="w-full">
+            <div className="mb-10 flex items-center justify-between gap-4">
+            
+              <div>
+                <h1 className="mt-2 text-4xl font-bold tracking-tight text-slate-900">
+                  {viewMode === 'board' ? 'My Tasks' : 'Task Calendar'}
+                </h1>
+                <p className="mt-3 text-lg text-slate-500">
+                  {viewMode === 'board'
+                    ? 'Track your work visually and keep things moving.'
+                    : 'Organize and track your tasks with a calendar view.'}
+                </p>
               </div>
-            </DndContext>
-          ):(
-            <CalendarView tasks={tasks} onTaskClick={handleTaskClick} />
-          )}
+
+              {/* Create Task Button */}
+              <button
+                onClick={() => setIsCreateModalOpen(true)}
+                className="rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500"
+              >
+                + New Task
+              </button>
+            
+            </div>
+
+            {loading && <p className="mb-4 text-sm text-gray-500">Loading tasks...</p>}
+            {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+            
+            {viewMode === 'board' ? (
+              <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+                
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                  {columns.map((column) => {
+                    const columnTasks = getTasksByStatus(column.id)
+
+                    return (
+                      <Column
+                        key={column.id}
+                        id={column.id}
+                        title={column.title}
+                        count={columnTasks.length}
+                        taskIds={columnTasks.map((task) => task.id)}
+                        accent={column.accent}
+                        surface={column.surface}
+                      >
+                      {columnTasks.length === 0 ? (
+                        <EmptyState title="No tasks yet" description={column.emptyText} />
+                        ) : (
+                          columnTasks.map((task) => (
+                            <TaskCard 
+                              key={task.id} 
+                              task={task} 
+                              onClick={() => handleTaskClick(task)} 
+                            />
+                          ))
+                        )}
+                      </Column>
+                    )
+                  })}
+                </div>
+              </DndContext>
+            ):(
+              <CalendarView tasks={filteredTasks} onTaskClick={handleTaskClick} />
+            )}
+          </div>
         </div>
       </div>
 
