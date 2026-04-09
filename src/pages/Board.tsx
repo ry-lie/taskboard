@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/core'
 import type { DragEndEvent } from '@dnd-kit/core' // *type-only import
 import { supabase } from '../lib/supabase'
+import CalendarView from './CalendarView'
 
 const columns: { id: TaskStatus; title: string; accent: string; emptyText: string; surface: string; }[] = [
   { 
@@ -53,6 +54,8 @@ export default function Board() {
 
   // Controls whether the create task modal is open.
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+
+  const [viewMode, setViewMode] = useState<'board' | 'calendar'>('board')
 
   const [selectedTask, setSelectedTask] = useState<Task | null>(null)
   const [isTaskDetailOpen, setIsTaskDetailOpen] = useState(false)
@@ -136,37 +139,70 @@ export default function Board() {
             </button>
           </div>
 
+          {/* View Toggle */}
+          <div className="mb-6 flex items-center gap-2">
+            <button
+              onClick={() => setViewMode('board')}
+              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                viewMode === 'board'
+                  ? 'bg-slate-900 text-white'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              Board
+            </button>
+
+            <button
+              onClick={() => setViewMode('calendar')}
+              className={`rounded-xl px-4 py-2 text-sm font-medium transition ${
+                viewMode === 'calendar'
+                  ? 'bg-slate-900 text-white'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              Calendar
+            </button>
+          </div>
+
           {loading && <p className="mb-4 text-sm text-gray-500">Loading tasks...</p>}
           {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+          
+          {viewMode === 'board' ? (
+            <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
+              
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+                {columns.map((column) => {
+                  const columnTasks = getTasksByStatus(column.id)
 
-          <DndContext sensors={sensors} collisionDetection={closestCorners} onDragEnd={handleDragEnd}>
-            
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {columns.map((column) => {
-                const columnTasks = getTasksByStatus(column.id)
-
-                return (
-                  <Column
-                    key={column.id}
-                    id={column.id}
-                    title={column.title}
-                    count={columnTasks.length}
-                    taskIds={columnTasks.map((task) => task.id)}
-                    accent={column.accent}
-                    surface={column.surface}
-                  >
-                  {columnTasks.length === 0 ? (
-                    <EmptyState title="No tasks yet" description={column.emptyText} />
-                    ) : (
-                      columnTasks.map((task) => (
-                        <TaskCard key={task.id} task={task} onClick={() => handleTaskClick(task)} />
-                      ))
-                    )}
-                  </Column>
-                )
-              })}
-            </div>
-          </DndContext>
+                  return (
+                    <Column
+                      key={column.id}
+                      id={column.id}
+                      title={column.title}
+                      count={columnTasks.length}
+                      taskIds={columnTasks.map((task) => task.id)}
+                      accent={column.accent}
+                      surface={column.surface}
+                    >
+                    {columnTasks.length === 0 ? (
+                      <EmptyState title="No tasks yet" description={column.emptyText} />
+                      ) : (
+                        columnTasks.map((task) => (
+                          <TaskCard 
+                            key={task.id} 
+                            task={task} 
+                            onClick={() => handleTaskClick(task)} 
+                          />
+                        ))
+                      )}
+                    </Column>
+                  )
+                })}
+              </div>
+            </DndContext>
+          ):(
+            <CalendarView tasks={tasks} onTaskClick={handleTaskClick} />
+          )}
         </div>
       </div>
 
