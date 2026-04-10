@@ -89,14 +89,7 @@ export default function CalendarView({ tasks, onTaskClick }: CalendarViewProps) 
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="mb-5">
-        <h2 className="text-2xl font-bold tracking-tight text-slate-900">Task Calendar</h2>
-        <p className="mt-2 text-sm text-slate-500">
-          Organize and track your tasks with a calendar view.
-        </p>
-      </div>
-
+    <div className="rounded-2xl border border-slate-200 bg-white p-10 shadow-sm">
       <FullCalendar
         plugins={[dayGridPlugin]}
         initialView="dayGridMonth"

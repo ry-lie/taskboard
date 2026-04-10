@@ -9,8 +9,8 @@
   --fc-button-border-color: #e2e8f0;
   --fc-button-hover-bg-color: #f8fafc;
   --fc-button-hover-border-color: #cbd5e1;
-  --fc-button-active-bg-color: #0f172a;
-  --fc-button-active-border-color: #0f172a;
+  --fc-button-active-bg-color: #e2e8f0;
+  --fc-button-active-border-color: #e2e8f0;
   --fc-button-active-text-color: #ffffff;
   font-family: inherit;
 }
